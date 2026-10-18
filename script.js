@@ -29,7 +29,10 @@ function initGame() {
     }
 
     for (let i = 0; i < TOTAL_CELLS; i++) {
-        if (board[i].isBomb) continue;
+        if (board[i].isBomb) {
+            board[i].neighborBombs = "💣";
+            continue;
+        }
         let count = 0;
         let row = Math.floor(i / GRID_SIZE);
         let col = i % GRID_SIZE;
@@ -53,11 +56,10 @@ function initGame() {
     for (let i = 0; i < TOTAL_CELLS; i++) {
         const cell = document.getElementById(i.toString());
         if (cell) {
-            cell.className = "grid-item valid";
+            cell.className = board[i].isBomb ? "grid-item valid bomb" : "grid-item valid";
             cell.setAttribute("data", board[i].neighborBombs);
             cell.innerHTML = "";
 
-            // Clone to remove old event listeners if re-initializing
             const newCell = cell.cloneNode(true);
             cell.parentNode.replaceChild(newCell, cell);
 
@@ -144,6 +146,6 @@ function endGame(isWin) {
 
     let resultDiv = document.getElementById("result");
     if (resultDiv) {
-        resultDiv.innerHTML = isWin ? "YOU WIN!" : "YOU LOSE!";
+        resultDiv.innerText = isWin ? "YOU WIN!" : "YOU LOSE!";
     }
 }
