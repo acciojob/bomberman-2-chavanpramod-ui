@@ -12,8 +12,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initGame() {
-    const gridContainer = document.querySelector(".grid-container") || createGridContainer();
-    gridContainer.innerHTML = "";
+    const gridContainer = document.querySelector(".grid-container");
+    if (gridContainer) {
+        gridContainer.innerHTML = "";
+    }
     
     board = Array(TOTAL_CELLS).fill(0).map(() => ({
         isBomb: false,
@@ -57,7 +59,6 @@ function initGame() {
         const cell = document.createElement("div");
         cell.id = i.toString();
         cell.className = "grid-item valid";
-        cell.setAttribute("data-", board[i].neighborBombs);
         cell.setAttribute("data", board[i].neighborBombs);
 
         cell.addEventListener("click", () => {
@@ -71,17 +72,12 @@ function initGame() {
             toggleFlag(i);
         });
 
-        gridContainer.appendChild(cell);
+        if (gridContainer) {
+            gridContainer.appendChild(cell);
+        }
     }
 
     updateFlagsLeft();
-}
-
-function createGridContainer() {
-    const container = document.createElement("div");
-    container.className = "grid-container";
-    document.body.appendChild(container);
-    return container;
 }
 
 function revealCell(index) {
@@ -89,9 +85,13 @@ function revealCell(index) {
 
     board[index].isRevealed = true;
     const cellElement = document.getElementById(index.toString());
+    if (!cellElement) return;
+    
     cellElement.classList.add("checked");
 
     if (board[index].isBomb) {
+        cellElement.classList.add("bomb");
+        cellElement.innerHTML = "💣";
         endGame(false);
         return;
     }
@@ -103,6 +103,7 @@ function revealCell(index) {
 
 function toggleFlag(index) {
     const cellElement = document.getElementById(index.toString());
+    if (!cellElement) return;
     
     if (board[index].isFlagged) {
         board[index].isFlagged = false;
@@ -127,12 +128,9 @@ function toggleFlag(index) {
 
 function updateFlagsLeft() {
     let flagsLeftSpan = document.getElementById("flagsLeft");
-    if (!flagsLeftSpan) {
-        flagsLeftSpan = document.createElement("span");
-        flagsLeftSpan.id = "flagsLeft";
-        document.body.appendChild(flagsLeftSpan);
+    if (flagsLeftSpan) {
+        flagsLeftSpan.innerText = TOTAL_BOMBS - flagCount;
     }
-    flagsLeftSpan.innerText = TOTAL_BOMBS - flagCount;
 }
 
 function checkWin() {
@@ -148,17 +146,16 @@ function endGame(isWin) {
         for (let i = 0; i < TOTAL_CELLS; i++) {
             if (board[i].isBomb) {
                 const cellElement = document.getElementById(i.toString());
-                cellElement.classList.add("checked", "bomb");
-                cellElement.innerHTML = "💣";
+                if (cellElement) {
+                    cellElement.classList.add("checked", "bomb");
+                    cellElement.innerHTML = "💣";
+                }
             }
         }
     }
 
     let resultDiv = document.getElementById("result");
-    if (!resultDiv) {
-        resultDiv = document.createElement("div");
-        resultDiv.id = "result";
-        document.body.appendChild(resultDiv);
+    if (resultDiv) {
+        resultDiv.innerText = isWin ? "YOU WIN!" : "YOU LOSE!";
     }
-    resultDiv.innerText = isWin ? "YOU WIN!" : "YOU LOSE!";
 }
