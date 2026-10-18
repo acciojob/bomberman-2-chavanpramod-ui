@@ -15,7 +15,18 @@
 		<button id="reset_button">Reset</button>
 	</div>
 	
-	<div class="grid-container"></div>
+	<div class="grid-container">
+		<!-- Pre-generate cells with unique IDs from 0 to 99 to satisfy initial HTML requirements -->
+		<script>
+			const container = document.currentScript.parentElement;
+			for (let i = 0; i < 100; i++) {
+				const cell = document.createElement("div");
+				cell.id = i.toString();
+				cell.className = "grid-item valid";
+				container.appendChild(cell);
+			}
+		</script>
+	</div>
 
 	<div id="result"></div>
 	<div>Flags left: <span id="flagsLeft">10</span></div>

@@ -12,11 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initGame() {
-    const gridContainer = document.querySelector(".grid-container");
-    if (gridContainer) {
-        gridContainer.innerHTML = "";
-    }
-    
     board = Array(TOTAL_CELLS).fill(0).map(() => ({
         isBomb: false,
         isRevealed: false,
@@ -56,24 +51,26 @@ function initGame() {
     }
 
     for (let i = 0; i < TOTAL_CELLS; i++) {
-        const cell = document.createElement("div");
-        cell.id = i.toString();
-        cell.className = "grid-item valid";
-        cell.setAttribute("data", board[i].neighborBombs);
+        const cell = document.getElementById(i.toString());
+        if (cell) {
+            cell.className = "grid-item valid";
+            cell.setAttribute("data", board[i].neighborBombs);
+            cell.innerHTML = "";
 
-        cell.addEventListener("click", () => {
-            if (isGameOver || board[i].isRevealed || board[i].isFlagged) return;
-            revealCell(i);
-        });
+            // Clone to remove old event listeners if re-initializing
+            const newCell = cell.cloneNode(true);
+            cell.parentNode.replaceChild(newCell, cell);
 
-        cell.addEventListener("contextmenu", (e) => {
-            e.preventDefault();
-            if (isGameOver || board[i].isRevealed) return;
-            toggleFlag(i);
-        });
+            newCell.addEventListener("click", () => {
+                if (isGameOver || board[i].isRevealed || board[i].isFlagged) return;
+                revealCell(i);
+            });
 
-        if (gridContainer) {
-            gridContainer.appendChild(cell);
+            newCell.addEventListener("contextmenu", (e) => {
+                e.preventDefault();
+                if (isGameOver || board[i].isRevealed) return;
+                toggleFlag(i);
+            });
         }
     }
 
@@ -147,6 +144,6 @@ function endGame(isWin) {
 
     let resultDiv = document.getElementById("result");
     if (resultDiv) {
-        resultDiv.innerText = isWin ? "YOU WIN!" : "YOU LOSE!";
+        resultDiv.innerHTML = isWin ? "YOU WIN!" : "YOU LOSE!";
     }
 }
