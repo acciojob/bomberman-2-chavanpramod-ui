@@ -3,7 +3,7 @@ const TOTAL_CELLS = GRID_SIZE * GRID_SIZE;
 const TOTAL_BOMBS = 10;
 
 let board = [];
-let score = 0;
+let revealedCount = 0;
 let flagCount = 0;
 let isGameOver = false;
 
@@ -97,7 +97,7 @@ function revealCell(index) {
     }
 
     cellElement.innerHTML = board[index].neighborBombs;
-    score++;
+    revealedCount++;
     checkWin();
 }
 
@@ -110,20 +110,13 @@ function toggleFlag(index) {
         cellElement.classList.remove("flag");
         cellElement.innerHTML = "";
         flagCount--;
-        if (board[index].isBomb) {
-            score--;
-        }
     } else {
         board[index].isFlagged = true;
         cellElement.classList.add("flag");
         cellElement.innerHTML = "🚩";
         flagCount++;
-        if (board[index].isBomb) {
-            score++;
-        }
     }
     updateFlagsLeft();
-    checkWin();
 }
 
 function updateFlagsLeft() {
@@ -134,7 +127,7 @@ function updateFlagsLeft() {
 }
 
 function checkWin() {
-    if (score >= 90) {
+    if (revealedCount === TOTAL_CELLS - TOTAL_BOMBS) {
         endGame(true);
     }
 }
