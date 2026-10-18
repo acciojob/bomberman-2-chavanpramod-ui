@@ -1,19 +1,155 @@
 //your code here
 
-function reset() {
-    for (i = 1; i <= 9; i++) {
-        const block = document.getElementById(`${i}`);
-        block.style.backgroundColor = "transparent";
+const GRID_SIZE = 10;
+const TOTAL_CELLS = GRID_SIZE * GRID_SIZE;
+const TOTAL_BOMBS = 10;
+
+let board = [];
+let revealedCount = 0;
+let flagCount = 0;
+let isGameOver = false;
+
+document.addEventListener("DOMContentLoaded", () => {
+    initGame();
+});
+
+function initGame() {
+    const gridContainer = document.querySelector(".grid-container") || createGridContainer();
+    gridContainer.innerHTML = "";
+    
+    board = Array(TOTAL_CELLS).fill(0).map(() => ({
+        isBomb: false,
+        isRevealed: false,
+        isFlagged: false,
+        neighborBombs: 0
+    }));
+
+    let bombsPlaced = 0;
+    while (bombsPlaced < TOTAL_BOMBS) {
+        let index = Math.floor(Math.random() * TOTAL_CELLS);
+        if (!board[index].isBomb) {
+            board[index].isBomb = true;
+            bombsPlaced++;
+        }
+    }
+
+    for (let i = 0; i < TOTAL_CELLS; i++) {
+        if (board[i].isBomb) continue;
+        let count = 0;
+        let row = Math.floor(i / GRID_SIZE);
+        let col = i % GRID_SIZE;
+
+        for (let r = -1; r <= 1; r++) {
+            for (let c = -1; c <= 1; c++) {
+                if (r === 0 && c === 0) continue;
+                let newRow = row + r;
+                let newCol = col + c;
+                if (newRow >= 0 && newRow < GRID_SIZE && newCol >= 0 && newCol < GRID_SIZE) {
+                    let neighborIndex = newRow * GRID_SIZE + newCol;
+                    if (board[neighborIndex].isBomb) {
+                        count++;
+                    }
+                }
+            }
+        }
+        board[i].neighborBombs = count;
+    }
+
+    for (let i = 0; i < TOTAL_CELLS; i++) {
+        const cell = document.createElement("div");
+        cell.id = i.toString();
+        cell.className = "grid-item valid";
+        cell.setAttribute("data-", board[i].neighborBombs);
+        cell.setAttribute("data", board[i].neighborBombs);
+
+        cell.addEventListener("click", () => {
+            if (isGameOver || board[i].isRevealed || board[i].isFlagged) return;
+            revealCell(i);
+        });
+
+        cell.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            if (isGameOver || board[i].isRevealed) return;
+            toggleFlag(i);
+        });
+
+        gridContainer.appendChild(cell);
+    }
+
+    updateFlagsLeft();
+}
+
+function createGridContainer() {
+    const container = document.createElement("div");
+    container.className = "grid-container";
+    document.body.appendChild(container);
+    return container;
+}
+
+function revealCell(index) {
+    if (isGameOver || board[index].isRevealed || board[index].isFlagged) return;
+
+    board[index].isRevealed = true;
+    const cellElement = document.getElementById(index.toString());
+    cellElement.classList.add("checked");
+
+    if (board[index].isBomb) {
+        cellElement.classList.add("bomb");
+        cellElement.innerHTML = "💣";
+        endGame(false);
+        return;
+    }
+
+    revealedCount++;
+    cellElement.innerHTML = board[index].neighborBombs;
+
+    if (revealedCount === TOTAL_CELLS - TOTAL_BOMBS) {
+        endGame(true);
     }
 }
-  
-document.getElementById('reset_button').addEventListener('click', reset);
 
-document.getElementById('change_button').addEventListener('click', () => {
-    reset();
-    const blockId = document.getElementById("block_id").value;
-    const color = document.getElementById("colour_id").value;
-    // alert(colorId)
-    const block = document.getElementById(`${blockId}`);
-    block.style.backgroundColor = color;
-});
+function toggleFlag(index) {
+    const cellElement = document.getElementById(index.toString());
+    
+    if (board[index].isFlagged) {
+        board[index].isFlagged = false;
+        cellElement.classList.remove("flag");
+        cellElement.innerHTML = "";
+        flagCount--;
+    } else {
+        board[index].isFlagged = true;
+        cellElement.classList.add("flag");
+        cellElement.innerHTML = "🚩";
+        flagCount++;
+    }
+    updateFlagsLeft();
+}
+
+function updateFlagsLeft() {
+    let flagsLeftSpan = document.getElementById("flagsLeft");
+    if (flagsLeftSpan) {
+        flagsLeftSpan.innerText = TOTAL_BOMBS - flagCount;
+    }
+}
+
+function endGame(isWin) {
+    isGameOver = true;
+    
+    if (!isWin) {
+        for (let i = 0; i < TOTAL_CELLS; i++) {
+            if (board[i].isBomb) {
+                const cellElement = document.getElementById(i.toString());
+                cellElement.classList.add("checked", "bomb");
+                cellElement.innerHTML = "💣";
+            }
+        }
+    }
+
+    let resultDiv = document.getElementById("result");
+    if (!resultDiv) {
+        resultDiv = document.createElement("div");
+        resultDiv.id = "result";
+        document.body.appendChild(resultDiv);
+    }
+    resultDiv.innerText = isWin ? "YOU WIN!" : "YOU LOSE!";
+}
