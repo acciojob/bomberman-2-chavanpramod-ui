@@ -1,11 +1,9 @@
-//your code here
-
 const GRID_SIZE = 10;
 const TOTAL_CELLS = GRID_SIZE * GRID_SIZE;
 const TOTAL_BOMBS = 10;
 
 let board = [];
-let revealedCount = 0;
+let score = 0;
 let flagCount = 0;
 let isGameOver = false;
 
@@ -94,18 +92,13 @@ function revealCell(index) {
     cellElement.classList.add("checked");
 
     if (board[index].isBomb) {
-        cellElement.classList.add("bomb");
-        cellElement.innerHTML = "💣";
         endGame(false);
         return;
     }
 
-    revealedCount++;
     cellElement.innerHTML = board[index].neighborBombs;
-
-    if (revealedCount === TOTAL_CELLS - TOTAL_BOMBS) {
-        endGame(true);
-    }
+    score++;
+    checkWin();
 }
 
 function toggleFlag(index) {
@@ -116,19 +109,35 @@ function toggleFlag(index) {
         cellElement.classList.remove("flag");
         cellElement.innerHTML = "";
         flagCount--;
+        if (board[index].isBomb) {
+            score--;
+        }
     } else {
         board[index].isFlagged = true;
         cellElement.classList.add("flag");
         cellElement.innerHTML = "🚩";
         flagCount++;
+        if (board[index].isBomb) {
+            score++;
+        }
     }
     updateFlagsLeft();
+    checkWin();
 }
 
 function updateFlagsLeft() {
     let flagsLeftSpan = document.getElementById("flagsLeft");
-    if (flagsLeftSpan) {
-        flagsLeftSpan.innerText = TOTAL_BOMBS - flagCount;
+    if (!flagsLeftSpan) {
+        flagsLeftSpan = document.createElement("span");
+        flagsLeftSpan.id = "flagsLeft";
+        document.body.appendChild(flagsLeftSpan);
+    }
+    flagsLeftSpan.innerText = TOTAL_BOMBS - flagCount;
+}
+
+function checkWin() {
+    if (score >= 90) {
+        endGame(true);
     }
 }
 
