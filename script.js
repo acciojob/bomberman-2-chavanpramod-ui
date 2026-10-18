@@ -142,14 +142,12 @@ function checkWin() {
 function endGame(isWin) {
     isGameOver = true;
     
-    if (!isWin) {
-        for (let i = 0; i < TOTAL_CELLS; i++) {
-            if (board[i].isBomb) {
-                const cellElement = document.getElementById(i.toString());
-                if (cellElement) {
-                    cellElement.classList.add("checked", "bomb");
-                    cellElement.innerHTML = "💣";
-                }
+    for (let i = 0; i < TOTAL_CELLS; i++) {
+        if (board[i].isBomb) {
+            const cellElement = document.getElementById(i.toString());
+            if (cellElement) {
+                cellElement.classList.add("checked", "bomb");
+                cellElement.innerHTML = "💣";
             }
         }
     }
